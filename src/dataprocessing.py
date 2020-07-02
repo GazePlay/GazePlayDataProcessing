@@ -1,6 +1,6 @@
 import json
 import math
-import more_itertools as mit
+from itertools import groupby
 
 
 def readConfig(file):
@@ -41,6 +41,22 @@ def restructureCoordinatesFormat(coordinates):
     return coord
 
 
+def groupCoordX(coordinates):
+    coordX = []
+    for element in coordinates:
+        x = element["X"]
+        coordX.append(x)
+    return coordX
+
+
+def groupCoordY(coordinates):
+    coordY = []
+    for element in coordinates:
+        y = element["Y"]
+        coordY.append(y)
+    return coordY
+
+
 def computeDistance(coordinates):
     data = []
     for i in range(len(coordinates) - 1):
@@ -69,22 +85,39 @@ def computeVelocity(data):
     return velocities
 
 
-def classifyVelocities(data, velocityThreshold):
-    fixation = []
-    saccade = []
+def ivtClassifier(data, velocityThreshold):
+    classification = []
     for i in range(len(data) - 1):
-        if data[i] < velocityThreshold:
-            fixation.append(data[i])
+        if data[i] <= velocityThreshold:
+            classification.append((i, 1))
         else:
-            saccade.append(data[i])
-    return fixation
+            classification.append((i, 0))
+    return classification
 
 
-def groupConsecutiveFixation(iterable):
-    """Yield range of consecutive numbers."""
-    for group in mit.consecutive_groups(iterable):
-        group = list(group)
-        if len(group) == 1:
-            yield group[0]
-        else:
-            yield group[0], group[-1]
+def centroidOfFixation(coordX):
+    centroid = []
+    for i in range(len(coordX) - 1):
+        temp = sum(coordX[i]) / len(coordX), sum(coordX[i + 1]) / len(coordX)
+        centroid.append(temp)
+    return centroid
+
+
+def groupConsecutiveFixation(data):
+    """
+     Collapse consecutive fixation points into fixation groups, remove saccade
+    :param data: list of classified coordinates
+    :return: list of fixation groups
+    """
+
+    fixationGroups = []
+    for i in data:
+        if i[1] == 1:
+            fixationGroups.append(i)
+    # res = [list(group) for item, group in groupby(data)]
+    # fixationGroups = [i for i in res if i[0] == 1]
+    return fixationGroups
+
+
+# def getFixation(data, consecutiveFixations):
+  #  print(len(consecutiveFixations[0]))
