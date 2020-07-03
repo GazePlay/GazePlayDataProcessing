@@ -1,6 +1,5 @@
 import json
 import math
-from itertools import groupby
 
 
 def readConfig(file):
@@ -41,10 +40,19 @@ def restructureCoordinatesFormat(coordinates):
     return coord
 
 
+def restructureCoordinatesFormatWithoutTime(coordinates):
+    coord = []
+    for element in coordinates:
+        x = element["X"]
+        y = element["Y"]
+        coord.append((x, y))
+    return coord
+
+
 def groupCoordX(coordinates):
     coordX = []
     for element in coordinates:
-        x = element["X"]
+        x = element[0]
         coordX.append(x)
     return coordX
 
@@ -52,7 +60,7 @@ def groupCoordX(coordinates):
 def groupCoordY(coordinates):
     coordY = []
     for element in coordinates:
-        y = element["Y"]
+        y = element[1]
         coordY.append(y)
     return coordY
 
@@ -95,10 +103,10 @@ def ivtClassifier(data, velocityThreshold):
     return classification
 
 
-def centroidOfFixation(coordX):
+def centroidOfFixation(data):
     centroid = []
-    for i in range(len(coordX) - 1):
-        temp = sum(coordX[i]) / len(coordX), sum(coordX[i + 1]) / len(coordX)
+    for element in data:
+        temp = sum(element[0]) / len(element[0]), sum(element[1]) / len(element[1])
         centroid.append(temp)
     return centroid
 
@@ -114,10 +122,36 @@ def groupConsecutiveFixation(data):
     for i in data:
         if i[1] == 1:
             fixationGroups.append(i)
-    # res = [list(group) for item, group in groupby(data)]
-    # fixationGroups = [i for i in res if i[0] == 1]
     return fixationGroups
 
 
-# def getFixation(data, consecutiveFixations):
-  #  print(len(consecutiveFixations[0]))
+def mapCoordinatesToFixationGroups(data, consecutiveFixations):
+    temp = []
+    for index in range(len(data) - 1):
+        for i in consecutiveFixations:
+            if i[0] == index:
+                temp.append((index, data[index]))
+
+    res = list(groupConsecutiveFixationCoord(temp, 2))
+    return res
+
+
+def groupConsecutiveFixationCoord(li, maxgap):
+    out = []
+    last = li[0][0]
+    for x in li:
+        if x[0] - last > maxgap:
+            yield out
+            out = []
+        out.append(x[1])
+        last = x[0]
+    yield out
+
+
+def separateXAndYCoord(data):
+    res = []
+    for i in range(len(data) - 1):
+        coordX = groupCoordX(data[i])
+        coordY = groupCoordY(data[i])
+        res.append((coordX, coordY))
+    return res
