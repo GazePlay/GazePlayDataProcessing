@@ -45,12 +45,13 @@ def processData(velocityThreshold, coordWithTime, coordWithoutTime):
     print("res: ", mappedCoordToFixation)
     print("res after restructure: ", restructuredMappedCoordToFixation)
     print("fixation: ", fixation)
-    displayGraphs(coordWithoutTime, fixation)
+    return fixation
 
 
 def main():
     velocityThreshold, coordWithTime, coordWithoutTime = preProcessData()
-    processData(velocityThreshold, coordWithTime, coordWithoutTime)
+    fixation = processData(velocityThreshold, coordWithTime, coordWithoutTime)
+    displayGraphs(coordWithoutTime, fixation)
 
 
 if __name__ == '__main__':
