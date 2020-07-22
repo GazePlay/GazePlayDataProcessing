@@ -65,6 +65,14 @@ def groupCoordY(coordinates):
     return coordY
 
 
+def groupTime(coordinates):
+    timeList = []
+    for element in coordinates:
+        time = element[2]
+        timeList.append(time)
+    return timeList
+
+
 def computeDistance(coordinates):
     data = []
     for i in range(len(coordinates) - 1):
@@ -125,14 +133,14 @@ def groupConsecutiveFixation(data):
     return fixationGroups
 
 
-def mapCoordinatesToFixationGroups(data, consecutiveFixations):
+def mapCoordinatesToFixationGroups(data, consecutiveFixations, maxgap):
     temp = []
     for index in range(len(data) - 1):
         for i in consecutiveFixations:
             if i[0] == index:
                 temp.append((index, data[index]))
 
-    res = list(groupConsecutiveFixationCoord(temp, 2))
+    res = list(groupConsecutiveFixationCoord(temp, maxgap))
     return res
 
 
