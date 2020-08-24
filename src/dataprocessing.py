@@ -83,7 +83,7 @@ def computeDistance(coordinates):
 
         time = coordinates[i + 1][2] - coordinates[i][2]
         timeInSeconds = time * math.pow(10, -3)
-        data.append((degree, timeInSeconds))
+        data.append((degree, timeInSeconds, coordinates[i][0], coordinates[i][1]))
 
     return data
 
@@ -97,26 +97,18 @@ def computeVelocity(data):
             velocity = abs(distance) / time
         else:
             velocity = 0.0
-        velocities.append(velocity)
+        velocities.append((velocity, data[i][2], data[i][3]))
     return velocities
 
 
 def ivtClassifier(data, velocityThreshold):
     classification = []
     for i in range(len(data) - 1):
-        if data[i] <= velocityThreshold:
-            classification.append((i, 1))
+        if data[i][0] <= velocityThreshold:
+            classification.append((data[i][1], data[i][2], 1))
         else:
-            classification.append((i, 0))
+            classification.append((data[i][1], data[i][2], 0))
     return classification
-
-
-def centroidOfFixation(data):
-    centroid = []
-    for element in data:
-        temp = sum(element[0]) / len(element[0]), sum(element[1]) / len(element[1])
-        centroid.append(temp)
-    return centroid
 
 
 def groupConsecutiveFixation(data):
@@ -128,19 +120,28 @@ def groupConsecutiveFixation(data):
 
     fixationGroups = []
     for i in data:
-        if i[1] == 1:
-            fixationGroups.append(i)
+        if i[2] == 1:
+            fixationGroups.append((i[0], i[1]))
     return fixationGroups
 
 
-def mapCoordinatesToFixationGroups(data, consecutiveFixations, maxgap):
-    temp = []
-    for index in range(len(data) - 1):
-        for i in consecutiveFixations:
-            if i[0] == index:
-                temp.append((index, data[index]))
+def groupSaccadicPoints(data):
+    saccadicPoints = []
+    for i in data:
+        if i[2] == 0:
+            saccadicPoints.append((i[0], i[1]))
+    return saccadicPoints
 
-    res = list(groupConsecutiveFixationCoord(temp, maxgap))
+
+def getDistanceBetweenFixationPoints(coordinates):
+    data = []
+    for i in range(len(coordinates) - 1):
+        distanceX = coordinates[i + 1][0] - coordinates[i][0]
+        distanceY = coordinates[i + 1][1] - coordinates[i][1]
+        squared_distance = math.sqrt(distanceX ** 2 + distanceY ** 2)
+        data.append((squared_distance, coordinates[i]))
+    res = list(groupConsecutiveFixationCoord(data, 35))
+
     return res
 
 
@@ -154,6 +155,14 @@ def groupConsecutiveFixationCoord(li, maxgap):
         out.append(x[1])
         last = x[0]
     yield out
+
+
+def centroidOfFixation(data):
+    centroid = []
+    for element in data:
+        temp = sum(element[0]) / len(element[0]), sum(element[1]) / len(element[1])
+        centroid.append(temp)
+    return centroid
 
 
 def separateXAndYCoord(data):
